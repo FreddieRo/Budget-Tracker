@@ -1,0 +1,235 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Index
+{% endblock %}
+
+{% block main %}
+
+
+    <div class="table-responsive text-center">
+        <h3 class="mb-4">Fixed Expenses</h3>
+        {% if fixed %}
+
+            <table class="table align-middle">
+                <thead>
+                    <tr>
+                        <th class="d-none d-md-table-cell">Description</th>
+                        <th class="d-none d-md-table-cell">Amount</th>
+                        <th class="d-none d-md-table-cell">Category</th>
+                        <th class="d-table-cell d-md-none">Expense</th>
+
+
+                        <th class="d-none d-md-table-cell">Last Payment</th>
+                        <th class="d-none d-md-table-cell">Next Payment</th>
+                        <th class="d-table-cell d-md-none">Payments</th>
+
+                        <th class="d-none d-lg-table-cell">First Payment</th>
+                        <th class="d-none d-lg-table-cell">To Pay Every</th>
+                        <th class="d-table-cell d-lg-none">Details</th>
+
+                        <th colspan="5" class="text-center">Actions</th>
+
+
+
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in fixed if row.status %}
+                        <tr class="pay">
+                            <td class="d-none d-md-table-cell">{{ row.description }}</td>
+                            <td class="d-none d-md-table-cell">{{"$%.2f"|format(row.fixed_amount) }}</td>
+                            <td class="d-none d-md-table-cell">{{ row.category }}</td>
+
+                            <td class="d-table-cell d-md-none">
+                                <div class="m-2 fw-bolder">{{ row.description }}</div>
+                                <div class="m-2">{{"$%.2f"|format(row.fixed_amount) }}</div>
+                                <div class="m-2 fw-lighter">{{ row.category }}</div>
+                            </td>
+
+
+
+                            <td class="d-none d-md-table-cell">{{ row.last_payment }}</td>
+                            <td class="d-none d-md-table-cell renew">{{ row.renewal_date }}</td>
+                            <td class="d-table-cell d-md-none">
+                                <div class="renew mb-1">
+                                    <div class="fw-lighter">Last payment</div>{{ row.last_payment }}
+                                </div>
+                                <div>
+                                    <div class="fw-lighter">Next payment</div>{{row.renewal_date }}
+                                </div>
+                            </td>
+                            <td class="d-none d-lg-table-cell">{{ row.date }}</td>
+                            <td class="d-none d-lg-table-cell">{{ row.timeframe }}</td>
+                            <td class="d-table-cell d-lg-none">
+                                <div class="mb-1">
+                                    <div class="fw-lighter">First payment</div>{{ row.date }}
+                                </div>
+                                <div>
+                                    <div class="fw-lighter">To pay every</div>{{row.timeframe }}
+                                </div>
+                            </td>
+
+                            <td>
+                                <div class="d-table-cell d-sm-inline-flex ">
+                                    <form class="m-1" action="/pay" method="post" onsubmit="return confirm('Confirm payment of {{row['description']}} for {{row['date']}}?');">
+                                        <input name="id" type="hidden" value="{{row['id']}}">
+                                        <button class="btn btn-pay" type="submit">Pay</button>
+                                    </form>
+
+                                    <div class="d-lg-inline-flex">
+                                        <form class="m-1" action="/delete_last_payment" method="post" onsubmit="return confirm('Are you sure you want to undo your last payment for {{row['description']}}?');" onload="addDisabled(this, {{row.count}})">
+                                            <input name="id" type="hidden" value="{{row['id']}}">
+                                            <button type="submit" class="btn btn-edit " data-bs-toggle="tooltip" data-bs-html="true" data-bs-placement="top" {% if row.count < 2%} disabled {%endif%} title="<div class='border-bottom fw-bold'>Undo</div> <div>Delete the last payment</div>">
+                                                <i class="fa-solid fa-rotate-left"></i>
+                                            </button>
+                                        </form>
+
+
+                                        <div class="dropdown m-1" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-html="true" title="<div class='border-bottom fw-bold'>Change Amount</div> <div>Modify the next payments amount</div>">
+                                            <button class="btn btn-edit" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
+                                                <div>
+                                                    <i class="fa-solid fa-dollar-sign"></i>
+                                                </div>
+                                            </button>
+                                            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                                                <form action="/change_amount" method="post" class="needs-validation" novalidate>
+                                                    <div class="align-items-center p-1">
+                                                        <div class="input-group">
+                                                            <div class="input-group-prepend">
+                                                                <span class="input-group-text">$</span>
+                                                            </div>
+                                                            <input name="id" type="hidden" value="{{row['id']}}">
+                                                            <div>
+                                                                <input type="number" step="any" min=0 id="budget" class="form-control" name="amount" autocomplete="off" placeholder="0.00" required>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <button class="btn btn-secondary m-1" type="submit">Modify</button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+
+
+                                    <div class="d-lg-inline-flex">
+                                        <form class="m-1" action="/inactive" method="post" onsubmit="return confirm('Are you sure you want to archive {{row['description']}}?');">
+                                            <input name="id" type="hidden" value="{{row['id']}}">
+                                            <button type="submit" class="btn btn-edit" data-bs-toggle="tooltip" data-bs-html="true" data-bs-placement="top" title="<div class='border-bottom fw-bold'>Archive</div> <div>Move to inactive fixed expenses </div>">
+                                                <i class="fa-solid fa-box-archive"></i>
+                                            </button>
+                                        </form>
+
+                                        <form class="m-1" action="/delete_fixed" method="post" onsubmit="return confirm('Are you sure you want to delete {{row['description']}}?\nThis will also delete all the associated payments');">
+                                            <input name="id" type="hidden" value="{{row['id']}}">
+                                            <button type="submit" class="btn btn-edit" data-bs-toggle="tooltip" data-bs-html="true" data-bs-placement="top" title="<div class='border-bottom fw-bold'>Delete</div> <div>Deletes the fixed expense and all associated expenses</div>">
+                                                <i class="fa-solid fa-trash"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </td>
+
+
+                    {% endfor %}
+                </tr>
+            </table>
+
+
+
+            <h5 class="mt-5 mb-3">Inactive Fixed Expenses</h5>
+            <table class="table align-middle text-center">
+                <thead>
+                    <tr>
+
+                        <th class="d-none d-md-table-cell">Description</th>
+                        <th class="d-none d-md-table-cell">Amount</th>
+                        <th class="d-none d-md-table-cell">Category</th>
+                        <th class="d-table-cell d-md-none">Expense</th>
+
+
+                        <th class="d-none d-md-table-cell">Last Payment</th>
+                        <th class="d-none d-md-table-cell">Next Payment</th>
+                        <th class="d-table-cell d-md-none">Payments</th>
+
+                        <th class="d-none d-lg-table-cell">First Payment</th>
+                        <th class="d-none d-lg-table-cell">To Pay Every</th>
+                        <th class="d-table-cell d-lg-none">Details</th>
+
+                        <th colspan="5" class="text-center">Actions</th>
+
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in fixed if not row.status %}
+                        <tr>
+                            <td class="d-none d-md-table-cell">{{ row.description }}</td>
+                            <td class="d-none d-md-table-cell">{{"$%.2f"|format(row.fixed_amount) }}</td>
+                            <td class="d-none d-md-table-cell">{{ row.category }}</td>
+
+                            <td class="d-table-cell d-md-none ">
+                                <div class="m-2 fw-bolder">{{ row.description }}</div>
+                                <div class="m-2">{{"$%.2f"|format(row.fixed_amount) }}</div>
+                                <div class="m-2 fw-lighter">{{ row.category }}</div>
+                            </td>
+
+                            <td class="d-none d-md-table-cell">{{ row.last_payment }}</td>
+                            <td class="d-none d-md-table-cell renew">{{ row.renewal_date }}</td>
+                            <td class="d-table-cell d-md-none">
+                                <div class="mb-1">
+                                    <div class="fw-lighter">Last payment</div>{{ row.last_payment }}
+                                </div>
+                                <div>
+                                    <div class="fw-lighter">Next payment</div>{{row.renewal_date }}
+                                </div>
+                            </td>
+
+
+                            <td class="d-none d-lg-table-cell">{{ row.date }}</td>
+                            <td class="d-none d-lg-table-cell">{{ row.timeframe }}</td>
+                            <td class="d-table-cell d-lg-none">
+                                <div class="mb-1">
+                                    <div class="fw-lighter">First payment</div>{{ row.date }}
+                                </div>
+                                <div>
+                                    <div class="fw-lighter">To pay every</div>{{row.timeframe }}
+                                </div>
+                            </td>
+
+                            <td>
+                                <div class="d-table-cell d-sm-inline-flex ">
+
+                                    <form class="m-1" action="/active" method="post" onsubmit="return confirm('Are you sure you want to restore the payments for {{row['description']}}?');">
+                                        <input name="id" type="hidden" value="{{row['id']}}">
+                                        <button type="submit" class="btn btn-edit" data-bs-toggle="tooltip" data-bs-html="true" data-bs-placement="top" title="<div class='border-bottom fw-bold'>Restore Payments</div> <div>Restores the payments of this fixed expenses</div>"><i class="fa-solid fa-thumbtack"></i>
+                                        </button>
+
+                                    </form>
+
+                                    <form class="m-1" action="/delete_fixed" method="post" onsubmit="return confirm('Are you sure you want to delete {{row['description']}}?\nThis will also delete all the associated payments');">
+                                        <input name="id" type="hidden" value="{{row['id']}}">
+                                        <button type="submit" class="btn btn-edit" data-bs-toggle="tooltip" data-bs-html="true" data-bs-placement="top" title="<div class='border-bottom fw-bold'>Delete</div> <div>Deletes the fixed expense and all associated expenses</div>">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+
+
+                    {% endfor %}
+                </tr>
+            </table>
+
+            </div>{%else%}
+            <div class="p-3 mb-2 no-data">There are no fixed expenses to display</div>
+            <div><a href="/">Go back to the main page</a></div>
+        {%endif%}
+
+        <script>
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+            var tooltipList = tooltipTriggerList.map(function(tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl)
+            })
+        </script>
+
+{%endblock%}

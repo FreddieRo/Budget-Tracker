@@ -1,0 +1,806 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Index
+{% endblock %}
+
+{% block main %}
+
+    <div class="container-fluid text-center px-4">
+        <div class="row">
+            <div class="card-group mb-5">
+                <div class="card">
+                    <h5 class="card-title"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-plus-circle align-middle" viewBox="0 0 18 18">
+                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
+                        <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z" />
+                    </svg> Add new expense</h5>
+                    <div class="card-body w-100 justify-content-center">
+                        <form class="needs-validation w-100 mx-auto p-2" novalidate method="POST" action="/add_expense">
+                            <div class="row g-3 justify-content-center align-items-center p-1">
+                                <div class="col-3 text-end">
+                                    <label for="description" class="col-form-label">Description</label>
+                                </div>
+                                <div class="col-6">
+                                    <input type="text" id="description" class="form-control" name="description" autocomplete="off" required>
+                                </div>
+                            </div>
+
+                            <div class="row g-3 justify-content-center align-items-center p-1">
+                                <div class="col-3 text-end">
+                                    <label for="amount" class="col-form-label">Amount</label>
+                                </div>
+                                <div class="col-6">
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text">$</span>
+                                        </div>
+                                        <input type="number" step="any" min=0 id="amount" class="form-control amount-form-control" name="amount" autocomplete="off" placeholder="0.00" required>
+
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row g-3 justify-content-center align-items-center p-1">
+                                <div class="col-3 text-end">
+                                    <label for="category_div_label" class="col-form-label text-end">Category</label>
+                                </div>
+
+                                <div class="col-6" id="category_div">
+                                    <select required class="form-select form-check-inline" id="category_div_label" name="category" onchange="showOther('other_div', this)">
+
+                                        <option selected disabled value="">Category</option>
+                                        {% for category in all_categories %}
+                                            <option value="{{category.category}}">{{category.category}}</option>
+                                        {% endfor %}
+                                        {% if not all_categories | length %}
+                                            <option value="Other">Add new category</option>
+                                        {% else %}
+                                            <option value="Other">Other</option>
+                                        {% endif %}
+                                    </select>
+
+                                </div>
+                                <div class="col-3" id="other_div">
+                                    <input type="text" id="other" name="other_category" placeholder="Other" class="form-control other-form-control" autocomplete="off">
+                                </div>
+                            </div>
+
+                            <div class="row g-3 justify-content-center align-items-center p-1">
+                                <div class="col-3 text-end">
+                                    <label for="date" class="col-form-label">Date</label>
+                                </div>
+                                <div class="col-6">
+                                    <input type="date" id="date" class="form-control" name="date" autocomplete="off" required>
+                                </div>
+                            </div>
+
+                            <div class="row justify-content-center align-items-center p-1">
+
+                                <div class="col-3 text-end">
+                                    Type
+                                </div>
+                                <div class="col-6" id="type">
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" name="type" id="type_variable" value="Variable" onchange="showTimeframe('fixed_div', this)">
+                                        <label class="form-check-label" for="type_variable">Variable</label>
+                                    </div>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" name="type" id="type_fixed" value="Fixed" onchange="showTimeframe('fixed_div', this)">
+                                        <label class="form-check-label" for="type_fixed">Fixed</label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div id="fixed_div" class="row g-3 justify-content-center align-items-center">
+                                <div class="col-3 text-end">
+                                    <label for="selectTimeframe" class="col-form-label ">Timeframe</label>
+                                </div>
+                                <div class="col-6">
+                                    <select id="selectTimeframe" type="text" class="form-select form-check-inline" name="fixed_div" autocomplete="off" onchange="showCustom('timeframe_div', this)">
+                                        <option selected disabled value="">Select timeframe</option>
+                                        <option value="1 weeks">1 week</option>
+                                        <option value="2 weeks">2 weeks</option>
+                                        <option value="1 months">1 month</option>
+                                        <option value="2 months">2 months</option>
+                                        <option value="6 months">6 month</option>
+                                        <option value="1 years">1 year</option>
+                                        <option value="Custom">Custom</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="row g-3 justify-content-center pt-1" id="timeframe_div">
+                                <div class="col-3 text-end">
+                                    <label for="timeframe_number" class="col-form-label"></label>
+                                </div>
+                                <div class="col-2">
+                                    <input class="form-control" name="timeframe_number" id="timeframe_number" type="number" min="1" value="" autocomplete="off">
+                                </div>
+
+                                <div class="col-4">
+                                    <select class="form-select" name="timeframe_unit">
+                                        <option value="" selected disabled>Unit</option>
+                                        <option value="days">Days</option>
+                                        <option value="weeks">Weeks</option>
+                                        <option value="months">Months</option>
+                                        <option value="years">Years</option>
+                                    </select>
+
+                                </div>
+                            </div>
+
+                        </div>
+                        <div class="card-footer">
+                            <button class="btn btn-footer" type="submit">Add Expense</button>
+                        </div>
+                    </form>
+                </div>
+
+
+                <div class="card">
+                    <h5 class="card-title">Your Budget</h5>
+                    {% if budget.budget %}
+                        <div class="card-subtitle row m-1">
+                            <div class="col">
+                                <p class="card-text"><strong>Budget:</strong> {{"$%.2f"|format(budget.budget)}}</p>
+                            </div>
+                            <div class="col">
+                                <p class="card-text"><strong>Remaining:</strong> {{"$%.2f"|format(budget.budget -
+                                    expenses_sum)}}</p>
+                            </div>
+                        </div>
+                        <div class="card-body align-items-center">
+                            <div class="chart-container position-relative">
+                                <div class="position-absolute top-50 start-50 mt-2 p-3 translate-middle">
+                                    <div>
+                                        <p class="card-text"><strong>Expenses:</strong> {{"$%.2f"|format(expenses_sum)}}</p>
+                                    </div>
+                                </div>
+                                <canvas id="totalChart"></canvas>
+                            </div>
+                        </div>
+
+                        <script>
+                            const remainingBudget = document.getElementById('totalChart');
+
+                            new Chart(remainingBudget, {
+                                type: 'doughnut',
+                                data: {
+                                    labels: ['Expenses', 'Remaining Budget'],
+                                    datasets: [{
+                                        data: [{{ expenses_sum }}, {{budget.budget - expenses_sum }}],
+                                        backgroundColor: ['#9966FF', '#ddccff'],
+                                    }]
+                                },
+                                options: {},
+                            });
+                        </script>
+
+
+
+                        <div class="card-footer">
+                            <div class="dropdown">
+                                <button class="btn btn-footer dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
+                                    Change Budget Details
+                                </button>
+                                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                                    <form method="POST" action="/update_budget" class="needs-validation" novalidate>
+                                        <div class="card-text">
+                                            <div class="row justify-content-center align-items-center g-3 p-1">
+                                                <div class="col-3 text-end">
+                                                    <label for="amount" class="col-form-label">Amount</label>
+                                                </div>
+                                                <div class="col-6 d-flex">
+                                                    <span class="input-group-text">$</span>
+                                                    <div class="input-group">
+                                                        <div class="input-group-prepend">
+
+                                                            <input type="number" step="any" min=0 id="amount" class="form-control amount-form-control" name="amount" autocomplete="off" placeholder="0.00">
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+
+                                            <div class="row justify-content-center g-3 p-1">
+                                                <div class="col-3 text-end">
+                                                    <label for="budget" class="col-form-label">Timeframe</label>
+                                                </div>
+                                                <div class="col-2">
+                                                    <input class="form-control" type="number" min="1" name="timeframe_number" value="" autocomplete="off">
+                                                </div>
+                                                <div class="col-4">
+                                                    <select class="form-select" name="timeframe_unit">
+                                                        <option selected disabled value="">Unit</option>
+                                                        <option value="days">Days</option>
+                                                        <option value="weeks">Weeks</option>
+                                                        <option value="months">Months</option>
+                                                        <option value="years">Years</option>
+                                                    </select>
+                                                </div>
+
+                                            </div>
+                                            <div class="row justify-content-center g-3 p-1">
+                                                <div class="col-3 text-end">
+                                                    <label for="date" class="col-form-label text-end">Date</label>
+                                                </div>
+                                                <div class="col-6">
+                                                    <input type="date" class="form-control" name="budget-date" autocomplete="off" value="">
+                                                </div>
+
+                                            </div>
+
+                                            <div class="row justify-content-center g-3 p-1">
+                                                <div class="col-4">
+                                                    <button type="submit" class="btn btn-change">Edit Budget</button>
+                                                </div>
+                                            </div>
+
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+
+                    {% else %}
+
+                        <div class="card-subtitle row mt-3">
+                            <div class="col">
+                                <p class="card-text"><strong>Budget:</strong> {{"$%.2f"|format(budget.budget)}}</p>
+                            </div>
+                            <div class="col">
+                                <p class="card-text"><strong>Expenses:</strong> {{"$%.2f"|format(expenses_sum)}}</p>
+                            </div>
+                        </div>
+
+                        <div class="card-body align-items-center">
+                            <form action="/add_budget" method="post" class="needs-validation" novalidate>
+                                <div class="card-text">
+                                    <div class="row justify-content-center align-items-center g-3 p-1">
+                                        <div class="col-3 text-end">
+                                            <label for="amount" class="col-form-label">Amount</label>
+                                        </div>
+                                        <div class="col-6 d-flex">
+                                            <span class="input-group-text">$</span>
+                                            <div class="input-group">
+                                                <div class="input-group-prepend">
+
+                                                    <input type="number" step="any" min=0 id="amount" class="form-control amount-form-control" name="amount" autocomplete="off" placeholder="0.00" required>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+
+                                    <div class="row justify-content-center g-3 p-1">
+                                        <div class="col-3 text-end">
+                                            <label for="budget" class="col-form-label">Timeframe</label>
+                                        </div>
+                                        <div class="col-2">
+                                            <input class="form-control" type="number" min="1" name="timeframe_number" value="" required autocomplete="off">
+                                        </div>
+                                        <div class="col-4">
+                                            <select class="form-select" name="timeframe_unit" required>
+                                                <option selected disabled value="">Unit</option>
+                                                <option value="days">Days</option>
+                                                <option value="weeks">Weeks</option>
+                                                <option value="months">Months</option>
+                                                <option value="years">Years</option>
+                                            </select>
+                                        </div>
+
+                                    </div>
+                                    <div class="row justify-content-center g-3 p-1">
+                                        <div class="col-3 text-end">
+                                            <label for="date" class="col-form-label text-end">Date</label>
+                                        </div>
+                                        <div class="col-6">
+                                            <input type="date" class="form-control" name="date" autocomplete="off" value="" required>
+                                        </div>
+
+                                    </div>
+                                    <button type="submit" class="btn border m-2">Add Budget</button>
+                                </div>
+                            </div>
+                        </form>
+                        <div class="card-footer">
+                            <button type="submit" class="btn btn-footer" disabled>Change Budget</button>
+                        </div>
+                    {% endif %}
+                </div>
+
+
+                <div class="card">
+                    <h5 class="card-title">Expenses divided by category</h5>
+                    <div class="card-body">
+                        {% if expenses_sum != 0 %}
+                            <div class="chart-container">
+                                <canvas id="categoryChart"></canvas>
+                            </div>
+
+
+                            <script>
+                                const configBar = {
+                                    type: 'bar',
+                                    data: {
+                                        labels: [{% for category in categories %}
+                                            '{{ category.category }}', {% endfor %}
+                                        ],
+                                        datasets: [{
+                                            label: 'Expenses',
+                                            data: [{% for category in categories %} {{ category.total_amount }}, {% endfor %}],
+                                            backgroundColor: [
+                                                'rgba(255, 99, 132, 0.2)',
+                                                'rgba(255, 159, 64, 0.2)',
+                                                'rgba(255, 205, 86, 0.2)',
+                                                'rgba(75, 192, 192, 0.2)',
+                                                'rgba(54, 162, 235, 0.2)',
+                                                'rgba(153, 102, 255, 0.2)'
+                                            ],
+                                            borderWidth: 1
+                                        }]
+                                    },
+                                    options: {
+                                        responsive: true,
+                                        maintainAspectRatio: false,
+                                        indexAxis: 'y',
+                                        scales: {
+                                            x: {
+                                                grid: {
+                                                    display: false
+                                                },
+                                            },
+                                            y: {
+                                                grid: {
+                                                    display: false
+                                                },
+                                            }
+                                        }
+                                    }
+                                };
+
+                                const configPie = {
+                                    type: 'pie',
+                                    data: {
+                                        labels: [{% for category in categories %}
+                                            '{{ category.category }}', {% endfor %}
+                                        ],
+                                        datasets: [{
+                                            label: 'Expenses',
+                                            data: [{% for category in categories %} {{ category.total_amount }}, {% endfor %}],
+                                            backgroundColor: [
+                                                'rgba(255, 99, 132, 0.2)',
+                                                'rgba(255, 159, 64, 0.2)',
+                                                'rgba(255, 205, 86, 0.2)',
+                                                'rgba(75, 192, 192, 0.2)',
+                                                'rgba(54, 162, 235, 0.2)',
+                                                'rgba(153, 102, 255, 0.2)'
+                                            ],
+                                            borderWidth: 1
+                                        }]
+                                    },
+                                    options: {
+                                        responsive: true,
+                                        maintainAspectRatio: false,
+
+                                    }
+                                };
+
+                                let categoryChart = new Chart(
+                                    document.getElementById('categoryChart'),
+                                    configPie
+                                );
+                            </script>
+
+
+                        {% else %}
+                            <div class="card-body align-content-center">
+                                Add a budget and your expenses to see them in the chart
+                            </div>
+
+                        {% endif %}
+                    </div>
+                    <div class="card-footer">
+                        <button class="btn btn-footer" onclick="changeChart()" id="categoryChartbtn"><i class="fa-regular fa-chart-bar"></i>
+                            Show as bar chart</button>
+                    </div>
+                </div>
+            </div>
+
+
+
+
+
+            <div class="row">
+
+                <div class="col-md-6">
+
+                <!-- Display progress bar -->
+                    <div class="row align-items-center px-3">
+                        <div id="progress-bar-date-above"></div>
+
+                        <div class="col-auto m-2">
+                            <div class="text-start">From:</div>
+                            <div class=" fw-lighter" id="startdate"></div>
+                        </div>
+
+                        <div class="progress col" style="height: 40px;">
+                            <div id="progressBar" class="progress-bar progress-bar-striped my_progress" role="progressbar" style="" aria-valuenow='' aria-valuemin="0" aria-valuemax="100"><span id="progress-bar-date" class="text-end pe-1"></span>
+                            </div>
+                        </div>
+
+                        <div class="col-auto ">
+                            <div class="text-start">To:</div>
+                            <div class=" fw-lighter" id="enddate"></div>
+                        </div>
+                    </div>
+
+
+                    <script>
+                    // Get start and end dates
+                        const startDate = new Date('{{budget.budget_start}}');
+                        const endDate = new Date('{{budget.budget_end}}');
+
+                    // Get current date
+                        const today = new Date();
+
+                    // Calculate total days in range
+                        const totalDays = (endDate - startDate) / (1000 * 60 * 60 * 24);
+
+                    // Calculate current day percentage
+                        const percent = (today - startDate) / (1000 * 60 * 60 * 24) / totalDays * 100;
+
+                    // Update the time progression chart with the calculated percent and formatted days
+                        document.getElementById("progressBar").style.width = percent + "%";
+                        document.getElementById("progressBar").setAttribute("aria-valuenow", percent);
+                        document.getElementById("startdate").innerHTML = startDate.toLocaleDateString(undefined, {
+                            day: 'numeric',
+                            month: 'short',
+                            year: 'numeric'
+                        });
+                        document.getElementById("enddate").innerHTML = endDate.toLocaleDateString(undefined, {
+                            day: 'numeric',
+                            month: 'short',
+                            year: 'numeric'
+                        });
+
+                    // Display today's date either on the progress bar or above it
+                        if (percent > 40) {
+                            document.getElementById("progress-bar-date").innerHTML = "<strong class='pe-1'>Today</strong>  " + today.toLocaleDateString(undefined, {
+                                day: 'numeric',
+                                month: 'short',
+                                year: 'numeric'
+                            });
+                        } else {
+                            document.getElementById("progress-bar-date-above").innerHTML = "<strong class='pe-1'>Today:</strong>" + today.toLocaleDateString(undefined, {
+                                day: 'numeric',
+                                month: 'short',
+                                year: 'numeric'
+                            });
+                        }
+                    </script>
+
+
+                    <h5 class="pt-4 pb-2"> Spending Over Time </h5>
+                    <div>
+                        <button onclick="showData(this)" value="previous" id="previous" class="btn"> <i class="fa-solid fa-arrow-left"></i> </button>
+                        <button onclick="showData(this)" value="next" id="next" class="btn"> <i class="fa-solid fa-arrow-right"></i></button>
+                        <canvas id="dataChart"></canvas>
+                        <div class="p-2">
+                            <button class="btn btn-time m-2" onclick="timeFrame(this, week, 15)" value="day">Week</button>
+                            <button class="btn btn-time m-2" onclick="timeFrame(this, month, 12)" value="month">Month</button>
+                            <button class="btn btn-time m-2" onclick="timeFrame(this, year, 5)" value="year">Year</button>
+                        </div>
+                    </div>
+                </div>
+
+
+
+                <script>
+                    var DateTime = luxon.DateTime;
+                    {% if amount_by_date %}
+                    var first_day = {{ (amount_by_date | min("date"))[0] | tojson }};
+                    var last_day = {{ (amount_by_date | max("date"))[0] | tojson }}
+					{% else %}
+                    var first_day = DateTime.now().minus({
+                        days: 15
+                    }).toISODate();
+                    var last_day = DateTime.now().toISODate();
+                    {% endif %}
+
+                // Initialize the data grouped by days, months or years
+                    const week = [{% for i in amount_by_date %} {
+                        x: DateTime.fromISO('{{ i.day }}'),
+                        y: {{ i.day_sum }}
+                    },
+                        {% endfor %}
+                    ];
+
+
+                    const month = [{% for i in amount_by_month %} {
+                        x: DateTime.fromISO('{{ i.month }}'),
+                        y: {{ i.month_sum }}
+                    },
+                        {% endfor %}
+                    ];
+
+
+                    const year = [{% for i in amount_by_year %} {
+                        x: DateTime.fromISO('{{ i.year }}'),
+                        y: {{ i.year_sum }}
+                    },
+                        {% endfor %}
+                    ];
+
+                // Create the table configuration
+                    const config = {
+                        type: 'line',
+                        data: {
+                            datasets: [{
+                                label: 'Expenses',
+                                data: week,
+                                borderWidth: 1,
+                                borderColor: '#36A2EB',
+                                backgroundColor: '#9BD0F5',
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: true,
+                            scales: {
+                                x: {
+                                    grid: {
+                                        display: false
+                                    },
+                                    type: 'time',
+                                    min: DateTime.now().minus({
+                                        days: 15
+                                    }).toISODate(),
+                                    max: DateTime.now().toISODate(),
+
+                                    time: {
+                                        unit: 'day'
+                                    },
+                                },
+                                y: {
+                                    grid: {
+                                        display: false
+                                    },
+                                    beginAtZero: true,
+                                }
+                            }
+                        }
+                    };
+
+                // Initializes the chart
+                    const dataChart = new Chart(
+                        document.getElementById('dataChart'),
+                        config);
+                </script>
+
+
+
+                <div class="col-md-6">
+
+                    <table class="table align-middle display p-5">
+                        <div type="button" class="btn position-relative">
+                            <h5>Fixed Expenses</h5> <button class="btn-edit-fixed position-absolute start-100 badge rounded-pill"><a class="edit-fixed-a text-decoration-none stretched-link" href="/manage_fixed">Edit</a></button>
+                        </div>
+                        <thead>
+                            <tr>
+                                <th class="d-table-cell d-lg-table-cell d-md-none">Description </th>
+                                <th class="d-table-cell d-lg-table-cell d-md-none">Amount</th>
+                                <th class="d-none d-lg-none d-md-table-cell">Expense</th>
+                                <th>Next Payment</th>
+                                <th>To Pay Every</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if fixed %}
+                                {% for row in fixed %}
+                                    <tr class="pay">
+                                        <td class="d-table-cell d-lg-table-cell d-md-none">{{ row.description }}</td>
+                                        <td class="d-table-cell d-lg-table-cell d-md-none">{{"$%.2f"|format(row.fixed_amount) }}</td>
+                                        <td class="d-none d-lg-none d-md-table-cell">
+                                            <div class="m-2 fw-bolder">{{ row.description }}</div>
+                                            <div class="m-2">{{"$%.2f"|format(row.fixed_amount) }}</div>
+                                        </td>
+                                        <td class="renew">{{ row.renewal_date }}</td>
+                                        <td>{{ row.timeframe }}</td>
+                                        <td>
+                                            <form action="/pay" method="post" onsubmit="return confirm('Pay for the next installment of {{row['description']}}?');">
+                                                <input name="id" type="hidden" value="{{row['id']}}">
+                                                <button type="submit" class="btn btn-pay">Pay</button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+
+                            {% else %}
+                                <tr class="no-data">
+                                    <td colspan="4">There are no fixed expenses</td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                    <div class="col m-3">
+                        {% for key, value in percentages.items() %}
+                            <div>Percentage of <strong>{{key}}</strong> expenses is <strong>{{value}} %</strong></div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+
+
+            <div class="col">
+                <form action="/archive_expenses" method="post" class="d-flex me-4 justify-content-end" onsubmit="return confirm('Are you sure you want to archive this budget?')">
+                    <button type="submit" class="btn btn-archive {% if current_expenses|selectattr('archived', 'equalto', 0) | list | length == 0  or not budget.budget_start or not budget.budget_end%} disabled {% endif %}" data-bs-toggle="tooltip" data-bs-html="true" data-bs-placement="top" title="Moves the expenses of the current budget to the archive and resets the budget details">
+                        Archive Expenses
+                    </button>
+                </form>
+            </div>
+
+
+            <div class="container-fluid mt-5">
+                <table id="myTable" class="table table-responsive table-striped w-100 text-center">
+                    <thead>
+                        <tr>
+                            <th>Description</th>
+                            <th>Amount</th>
+                            <th class="d-none d-sm-table-cell">Category</th>
+                            <th>Date</th>
+                            <th class="d-none d-md-table-cell">Type</th>
+                            <th>Delete</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+
+                        {% for row in current_expenses %}
+                            <tr>
+                                <td>{{row.description}}</td>
+                                <td>{{"$ %.2f"|format(row.amount)}}</td>
+                                <td class="d-none d-sm-table-cell">{{row.category}}</td>
+                                <td>{{row.date}}</td>
+                                <td class="d-none d-md-table-cell">{{row.type}}</td>
+                                <td>
+                                    <form action="/delete_expense" method="post" onsubmit="return confirm('Are you sure you want to delete {{row.description}}?');">
+                                        <input name="id" type="hidden" value="{{row.id}}">
+                                        <button type="submit" class="btn-close" aria-label="Close"></button>
+                                    </form>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <th>Total: </th>
+                            <th colspan="1" style="text-align:right"></th>
+                            <th></th>
+                        </tr>
+                    </tfoot>
+                </table>
+
+            <!-- https://datatables.net/extensions/fixedheader/examples/options/columnFiltering.html -->
+                <script>
+                    $(document).ready(function() {
+                    // Setup - add a text input to each footer cell
+
+                        $('#myTable thead tr')
+                            .clone(true)
+                            .addClass('filters')
+                            .appendTo('#myTable thead');
+
+                        var table = $('#myTable').DataTable({
+                            orderCellsTop: true,
+                            fixedHeader: true,
+                            order: [
+                                [3, 'desc']
+                            ],
+                            initComplete: function() {
+                                var api = this.api();
+
+                            // For each column
+                                api
+                                    .columns()
+                                    .eq(0)
+                                    .each(function(colIdx) {
+
+                                    // Set the header cell to contain the input element
+                                        var cell = $('.filters th').not(':last').eq(
+                                            $(api.column(colIdx).header()).index()
+                                        );
+                                        var title = $(cell).text();
+                                        $(cell).html('<input class="form-control" type="text" placeholder="' + title + '" />');
+
+                                        var cellLast = $('.filters th:last').eq($(api.column(colIdx).header()).index());
+                                        $(cellLast).html('');
+
+                                    // On every keypress in this input
+                                        $(
+                                            'input',
+                                            $('.filters th').eq($(api.column(colIdx).header()).index())
+                                        )
+                                            .off('keyup change')
+                                            .on('change', function(e) {
+                                            // Get the search value
+                                                $(this).attr('title', $(this).val());
+                                                var regexr = '({search})';
+
+                                                var cursorPosition = this.selectionStart;
+                                            // Search the column for that value
+                                                api
+                                                    .column(colIdx)
+                                                    .search(
+                                                        this.value != '' ?
+                                                        regexr.replace('{search}', '(((' + this.value + ')))') :
+                                                            '',
+                                                        this.value != '',
+                                                        this.value == ''
+                                                    )
+                                                    .draw();
+                                            })
+                                            .on('keyup', function(e) {
+                                                e.stopPropagation();
+
+                                                $(this).trigger('change');
+                                                $(this)
+                                                    .focus()[0]
+                                                    .setSelectionRange(cursorPosition, cursorPosition);
+                                            });
+                                    });
+                            },
+                            // https://datatables.net/examples/advanced_init/footer_callback.html
+                            footerCallback: function(row, data, start, end, display) {
+                                let api = this.api();
+
+                            // Remove the formatting to get integer data for summation
+                                let intVal = function(i) {
+                                    return typeof i === 'string' ?
+                                    i.replace(/[\$,]/g, '') * 1 :
+                                        typeof i === 'number' ?
+                                    i :
+                                        0;
+                                };
+
+                            // Total over all pages
+                                total = api
+                                    .column(1)
+                                    .data()
+                                    .reduce((a, b) => intVal(a) + intVal(b), 0);
+
+                            // Total over this page
+                                pageTotal = api
+                                    .column(1, {
+                                        page: 'current'
+                                    })
+                                    .data()
+                                    .reduce((a, b) => intVal(a) + intVal(b), 0);
+
+                            // Update footer
+                                api.column(1).footer().innerHTML =
+                                    '$' + pageTotal.toFixed(2) + ' ($' + total.toFixed(2) + ' total)';
+                            }
+
+
+                        });
+                    });
+                </script>
+            </div>
+
+
+        </div>
+    </div>
+
+    <script>
+    // Adds bootstrap functionality for tooltips
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function(tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        })
+    </script>
+
+
+
+{% endblock %}
