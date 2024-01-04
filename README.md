@@ -4,6 +4,7 @@
 ### Description:
 
 This web app allows the user to track their budget and their expenses. It uses graphs to visualize the users spending.
+The budget tracker was created as the final project for the CS50 Introduction to Computer Science course.
 
 
 ### Key Features:
