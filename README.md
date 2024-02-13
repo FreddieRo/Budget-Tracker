@@ -36,7 +36,7 @@ This web application was built using **Python**, **Flask** and **Jinja** on the 
 
 ```auth.py``` handles user registration and authentication using Flask-Login.
 
-The ```templates/``` folder holds the Jinja HTML templates rendered by the Flask app that generates the user interface with forms, tables, and charts. //////```layout.html``` holds the general structure of the page ```index.html``` is the homepage with the budget and expenses forms and the data visualization, ```manage.html``` allows creating/editing categories and transactions, and ```archived.html``` shows archived categories and transactions./////////
+The ```templates/``` folder holds the Jinja HTML templates rendered by the Flask app that generates the user interface with forms, tables, and charts. ```layout.html``` holds the general structure of the page ```index.html``` is the homepage with the budget and expenses forms and the data visualization, ```manage.html``` allows creating/editing categories and transactions, and ```archived.html``` shows archived categories and transactions.
 
 ```static/``` contains CSS stylesheets and JavaScript code.
 
